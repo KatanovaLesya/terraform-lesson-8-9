@@ -1,0 +1,33 @@
+image:
+  repository: 979126074710.dkr.ecr.us-east-1.amazonaws.com/lesson-7-django-ecr
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+replicaCount: 2
+
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 8000
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "256Mi"
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+
+envConfig:
+  # TODO: сюди перенеси змінні середовища з ДЗ по Docker/Django (тема 4)
+  # Приклад:
+  DJANGO_SETTINGS_MODULE: "app.settings"
+  DEBUG: "False"
+  SECRET_KEY: "change-me"
+  # DATABASE_URL: "postgres://user:password@host:5432/dbname"
