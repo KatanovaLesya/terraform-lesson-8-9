@@ -25,3 +25,12 @@ module "eks" {
   vpc_id             = module.vpc.vpc_id
   private_subnet_ids = module.vpc.public_subnet_ids
 }
+
+module "jenkins" {
+  source = "./modules/jenkins"
+
+  namespace      = "jenkins"
+  chart_version  = "5.3.2"
+  admin_user     = "admin"
+  admin_password = "Admin123!"
+}

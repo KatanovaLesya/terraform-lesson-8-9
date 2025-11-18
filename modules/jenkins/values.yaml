@@ -1,0 +1,16 @@
+controller:
+  adminUser: {{ .Values.controller.adminUser }}
+  adminPassword: {{ .Values.controller.adminPassword }}
+  serviceType: LoadBalancer
+  jenkinsUrl: "http://jenkins.example.local/"
+
+  # мінімальний ресурс, щоб не з’їдати купу грошей
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "512Mi"
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+
+# ці значення ми прокинемо через set у helm_release
