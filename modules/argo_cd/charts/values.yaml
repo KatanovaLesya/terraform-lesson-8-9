@@ -1,0 +1,7 @@
+applications:
+  - name: django-app
+    namespace: default
+    project: default
+    repoURL: "https://github.com/KatanovaLesya/terraform-lesson-8-9.git"
+    targetRevision: main
+    path: "charts/django-app"
