@@ -45,3 +45,15 @@ module "argo_cd" {
   cluster_name = module.eks.cluster_name
 }
 
+module "rds" {
+  source         = "./modules/rds"
+  engine_version = "15.3"
+  instance_class = "db.t3.micro"
+  db_name        = "mydb"
+  username       = "admin"
+  password       = "StrongPass123!"
+  vpc_id         = module.vpc.vpc_id
+  subnet_ids     = module.vpc.private_subnets
+}
+
+

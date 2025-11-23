@@ -1,4 +1,6 @@
-# CI/CD Pipeline: Terraform + Jenkins + ECR + Helm + Argo CD  
+# Terraform
+
+README.md for Terraform RDS Module in modules/rds
 
 ## Lesson 8-9 — Katanova Lesia
 
