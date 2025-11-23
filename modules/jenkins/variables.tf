@@ -21,3 +21,8 @@ variable "admin_password" {
   type        = string
   default     = "Admin123!"
 }
+
+variable "cluster_name" {
+  description = "Назва EKS кластера"
+  type        = string
+}

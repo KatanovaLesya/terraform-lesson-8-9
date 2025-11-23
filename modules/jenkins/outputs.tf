@@ -13,3 +13,7 @@ output "admin_password" {
   description = "Jenkins admin password"
   sensitive   = true
 }
+
+output "cluster_name" {
+  value = var.cluster_name
+}
