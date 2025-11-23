@@ -33,4 +33,6 @@ module "jenkins" {
   chart_version  = "5.3.2"
   admin_user     = "admin"
   admin_password = "Admin123!"
+
+  cluster_name = module.eks.cluster_name
 }
