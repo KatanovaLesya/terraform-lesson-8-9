@@ -14,3 +14,14 @@ variable "cluster_name" {
   description = "EKS cluster name"
   type        = string
 }
+
+variable "cluster_endpoint" {
+  description = "EKS cluster endpoint"
+  type        = string
+}
+
+variable "cluster_certificate_authority" {
+  description = "EKS cluster certificate authority (base64)"
+  type        = string
+}
+
