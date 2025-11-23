@@ -36,3 +36,12 @@ module "jenkins" {
 
   cluster_name = module.eks.cluster_name
 }
+
+module "argo_cd" {
+  source       = "./modules/argo_cd"
+  namespace    = "argocd"
+  chart_version = "7.6.11"
+
+  cluster_name = module.eks.cluster_name
+}
+
