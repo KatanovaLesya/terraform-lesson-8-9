@@ -21,7 +21,7 @@ module "ecr" {
 
 module "eks" {
   source             = "./modules/eks"
-  cluster_name       = "lesson-7-eks"
+  cluster_name       = "lesson-10-eks"
   vpc_id             = module.vpc.vpc_id
   private_subnet_ids = module.vpc.public_subnet_ids
 }
@@ -38,22 +38,27 @@ module "jenkins" {
 }
 
 module "argo_cd" {
-  source       = "./modules/argo_cd"
-  namespace    = "argocd"
-  chart_version = "7.6.11"
-
-  cluster_name = module.eks.cluster_name
+  source                      = "./modules/argo_cd"
+  cluster_name                 = module.eks.cluster_name
+  cluster_endpoint             = module.eks.cluster_endpoint
+  cluster_certificate_authority = module.eks.cluster_ca_data
 }
+
+
 
 module "rds" {
   source         = "./modules/rds"
-  engine_version = "15.3"
+
+  # 🔀 Перемикач типу бази
+  use_aurora     = false        # ❌ RDS (true → Aurora Cluster)
+  engine         = "postgres"   # або "aurora-postgresql" для Aurora
+  engine_version = "12.22"
   instance_class = "db.t3.micro"
   db_name        = "mydb"
-  username       = "admin"
+  username       = "lesya_db"
   password       = "StrongPass123!"
-  vpc_id         = module.vpc.vpc_id
-  subnet_ids     = module.vpc.private_subnets
-}
 
+  vpc_id      = module.vpc.vpc_id
+  subnet_ids  = module.vpc.private_subnet_ids
+}
 

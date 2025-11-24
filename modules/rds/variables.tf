@@ -1,17 +1,33 @@
-variable "engine_version" {
-  description = "PostgreSQL engine version"
+##############################################
+# Variables for RDS / Aurora Flexible Module
+##############################################
+
+variable "use_aurora" {
+  description = "If true, deploy Aurora cluster instead of a single RDS instance"
+  type        = bool
+  default     = false
+}
+
+variable "engine" {
+  description = "Database engine type (postgres or aurora-postgresql)"
   type        = string
-  default     = "15.3"
+  default     = "postgres"
+}
+
+variable "engine_version" {
+  description = "Engine version for PostgreSQL or Aurora PostgreSQL"
+  type        = string
+  default     = "12.22"
 }
 
 variable "instance_class" {
-  description = "Instance class for the RDS instance"
+  description = "Instance class for the RDS instance or Aurora cluster instance"
   type        = string
   default     = "db.t3.micro"
 }
 
 variable "multi_az" {
-  description = "Whether to enable Multi-AZ"
+  description = "Whether to enable Multi-AZ (for regular RDS only)"
   type        = bool
   default     = false
 }
@@ -25,7 +41,7 @@ variable "db_name" {
 variable "username" {
   description = "Master username"
   type        = string
-  default     = "admin"
+  default     = "dbadmin"
 }
 
 variable "password" {

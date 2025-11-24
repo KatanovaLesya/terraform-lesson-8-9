@@ -1,165 +1,100 @@
-# Terraform
+# Terraform Project. DB Module
 
 README.md for Terraform RDS Module in modules/rds
 
-## Lesson 8-9 — Katanova Lesia
+## 🎯 Опис завдання
 
-## 🎯 Мета проєкту
+Цей проєкт реалізує гнучку Terraform-інфраструктуру з модульною структурою.  
+У рамках цього домашнього завдання створено **універсальний RDS/Aurora PostgreSQL модуль**, який може автоматично створювати:
 
-Реалізувати повний CI/CD процес із використанням Terraform, Jenkins, Amazon ECR, Helm і Argo CD, який:
+- ✅ Звичайний AWS RDS Instance (PostgreSQL)  
+- ✅ Або Aurora PostgreSQL Cluster (через прапор `use_aurora = true`)  
 
-- автоматично збирає Docker-образ Django-застосунку;
-- пушить образ в Amazon ECR;
-- оновлює тег у `values.yaml` Helm-чарту;
-- пушить зміни у Git;
-- Argo CD автоматично синхронізує застосунок у кластері Kubernetes.
+Модуль також автоматично створює:
 
----
+- DB Subnet Group  
+- Security Group  
+- Parameter Group (для RDS)  
 
-## 🏗️ Інфраструктура (Terraform)
+Побудований для багаторазового використання та легкої інтеграції у будь-яку Terraform інфраструктуру.
 
-### 📦 Що створюється
-
-| Компонент | Опис |
-|-----------|------|
-| S3 + DynamoDB | Backend для Terraform state |
-| VPC | Приватні та публічні підмережі, Internet Gateway |
-| EKS Cluster | Kubernetes кластер |
-| ECR Repository | Реєстр Docker-образів |
-| IAM Roles | Для EKS кластера та нод |
-| Jenkins | Встановлений через Helm через Terraform |
-| Argo CD | Встановлено через Helm через Terraform |
-
----
-
-## 🚀 Команди для запуску Terraform
-
-### 1️⃣ Ініціалізація проєкту
-
-terraform init
-
-### 2️⃣ Перевірка конфігурації
-
-terraform validate
-
-### 3️⃣ Перегляд плану
-
-terraform plan
-
-### 4️⃣ Створення ресурсів
-
-terraform apply
-
-### 5️⃣ Видалення всієї інфраструктури (після перевірки!)
-
-terraform destroy
-
-## 🔐 Jenkins доступ
-
-### Перевірка статусу Helm release
-
-helm status jenkins -n jenkins
-kubectl get pods -n jenkins
-
-### Отримати пароль адміністратора
-
-kubectl exec --namespace jenkins -it svc/jenkins -c jenkins -- \
-/bin/cat /run/secrets/additional/chart-admin-password && echo
-
-### Проксі доступ (локально)
-
-kubectl port-forward -n jenkins svc/jenkins 8080:8080
-
-### 🌐 Відкрити в браузері
-
-<http://localhost:8080>
-
-### 👤 Логін
-
-admin
-
-## 🧰 CI/CD Pipeline (Jenkinsfile)
-
-Jenkins виконує:
-
-1️⃣ Клонує репозиторій з Django-проєктом
-2️⃣ Будує Docker image через Kaniko
-3️⃣ Пушить образ в ECR:
-
-979126074710.dkr.ecr.us-east-1.amazonaws.com/lesson-8-9-django-ecr
-
-4️⃣ Оновлює тег у charts/django-app/values.yaml
-5️⃣ Комітить зміни і пушить у main
-6️⃣ Argo CD автоматично їх підхоплює
-
-## 🌐 Argo CD встановлення та перевірка
-
-### Перевірка інсталяції
-
-kubectl get pods -n argocd
-helm status argo-cd -n argocd
-
-### Port-forward для доступу до UI
-
-kubectl port-forward svc/argocd-server -n argocd 8080:443
-
-### Web UI
-
-<https://localhost:8080>
-
-### 👤 Логін
-
-Username: admin
-
-Пароль:
-
-kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d
-
-## 📄 Argo CD Applications (Helm chart)
-
-### Структура модулю argo_cd
-
-modules/argo_cd/
- ├── providers.tf
- ├── argo_cd.tf
- ├── variables.tf
- ├── charts/
- │   └── django-app/
- │       ├── Chart.yaml
- │       ├── values.yaml
- │       └── templates/
- │           ├── application.yaml
- │           └── repository.yaml
-
-### 📁 Структура репозиторію
+### 📁 Структура проєкту
 
 terraform-lesson-8-9/
 ├── main.tf
 ├── backend.tf
+├── providers.tf
 ├── outputs.tf
-├── modules/
-│   ├── s3-backend/
-│   ├── vpc/
-│   ├── eks/
-│   ├── ecr/
-│   ├── jenkins/
-│   └── argo_cd/
-└── charts/
-    └── django-app/
+├── variables.tf
+└── modules/
+    ├── vpc/
+    ├── eks/
+    ├── ecr/
+    ├── jenkins/
+    ├── argo_cd/
+    ├── s3-backend/
+    └── rds/
+        ├── rds.tf
+        |── aurora.tf
+        ├── shared.tf
+        ├── variables.tf
+        ├── outputs.tf
+        └── README.md
 
-### 📦 Docker Image перевірка
+### ⚙️ Приклад використання модуля rds
 
-aws ecr describe-images \
-  --repository-name lesson-8-9-django-ecr \
-  --region us-east-1
+#### ▶️ Звичайна RDS база
 
-### 📌 Посилання
+module "rds" {
+  source         = "./modules/rds"
+  use_aurora     = false
+  engine         = "postgres"
+  engine_version = "12.22"
+  instance_class = "db.t3.micro"
+  db_name        = "mydb"
+  username       = "dbadmin"
+  password       = "StrongPass123!"
+  vpc_id         = module.vpc.vpc_id
+  subnet_ids     = module.vpc.private_subnet_ids
+}
 
-GitHub репозиторій 📎 [](https://github.com/KatanovaLesya/terraform-lesson-8-9.git)
-ECR repository 979126074710.dkr.ecr.us-east-1.amazonaws.com/lesson-8-9-django-ecr
+#### ▶️ Aurora PostgreSQL Cluster
 
-## 📌 Автор
+module "rds" {
+  source         = "./modules/rds"
+  use_aurora     = true
+  engine         = "aurora-postgresql"
+  engine_version = "12.22"
+  instance_class = "db.t3.medium"
+  db_name        = "aurora_db"
+  username       = "dbadmin"
+  password       = "StrongPass123!"
+  vpc_id         = module.vpc.vpc_id
+  subnet_ids     = module.vpc.private_subnet_ids
+}
 
-👤 Katanova Lesia
-📘 DevOps Terraform + Jenkins + Argo CD
-🗓️ 2025
+### 📦 Запуск інфраструктури
+
+terraform init
+terraform plan
+terraform apply
+
+Після розгортання Terraform виведе:
+
+db_endpoint = "xxxxx.cluster-xxxxxx.us-east-1.rds.amazonaws.com"
+db_name     = "mydb"
+db_type     = "RDS Instance" або "Aurora Cluster"
+
+### 🧾 Ключові зміни
+
+✅ Універсальний модуль rds, який підтримує як RDS, так і Aurora
+✅ Додано змінну use_aurora для вибору типу бази
+✅ Параметри гнучко налаштовуються через змінні
+✅ Оновлено outputs.tf для відображення endpoint будь-якого типу
+✅ Перевірено terraform plan і apply — без помилок
+
+### 🧠 Автор
+
+Катанова Леся
+Branch: lesson-db-module
+AWS Region: us-east-1
