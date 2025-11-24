@@ -1,23 +1,22 @@
-# Terraform
+# Terraform Project. DB Module
 
 README.md for Terraform RDS Module in modules/rds
 
-## Terraform Project – Lesson DB Module
+## 🎯 Опис завдання
 
-### 🎯 Опис завдання
+Цей проєкт реалізує гнучку Terraform-інфраструктуру з модульною структурою.  
+У рамках цього домашнього завдання створено **універсальний RDS/Aurora PostgreSQL модуль**, який може автоматично створювати:
 
-Цей проєкт реалізує гнучку Terraform-інфраструктуру з модульною структурою.
-У рамках цього домашнього завдання створено універсальний RDS PostgreSQL модуль, який автоматично створює:
+- ✅ Звичайний AWS RDS Instance (PostgreSQL)  
+- ✅ Або Aurora PostgreSQL Cluster (через прапор `use_aurora = true`)  
 
-AWS RDS Instance (PostgreSQL)
+Модуль також автоматично створює:
 
-DB Subnet Group
+- DB Subnet Group  
+- Security Group  
+- Parameter Group (для RDS)  
 
-Security Group
-
-Parameter Group з базовими налаштуваннями
-
-Модуль побудовано для багаторазового використання та легкої інтеграції в існуючу Terraform інфраструктуру.
+Побудований для багаторазового використання та легкої інтеграції у будь-яку Terraform інфраструктуру.
 
 ### 📁 Структура проєкту
 
@@ -36,6 +35,7 @@ terraform-lesson-8-9/
     ├── s3-backend/
     └── rds/
         ├── rds.tf
+        |── aurora.tf
         ├── shared.tf
         ├── variables.tf
         ├── outputs.tf
@@ -43,11 +43,30 @@ terraform-lesson-8-9/
 
 ### ⚙️ Приклад використання модуля rds
 
+#### ▶️ Звичайна RDS база
+
 module "rds" {
   source         = "./modules/rds"
+  use_aurora     = false
+  engine         = "postgres"
   engine_version = "12.22"
   instance_class = "db.t3.micro"
   db_name        = "mydb"
+  username       = "dbadmin"
+  password       = "StrongPass123!"
+  vpc_id         = module.vpc.vpc_id
+  subnet_ids     = module.vpc.private_subnet_ids
+}
+
+#### ▶️ Aurora PostgreSQL Cluster
+
+module "rds" {
+  source         = "./modules/rds"
+  use_aurora     = true
+  engine         = "aurora-postgresql"
+  engine_version = "12.22"
+  instance_class = "db.t3.medium"
+  db_name        = "aurora_db"
   username       = "dbadmin"
   password       = "StrongPass123!"
   vpc_id         = module.vpc.vpc_id
@@ -62,24 +81,20 @@ terraform apply
 
 Після розгортання Terraform виведе:
 
-db_endpoint = "mydb.xxxxxx.us-east-1.rds.amazonaws.com"
+db_endpoint = "xxxxx.cluster-xxxxxx.us-east-1.rds.amazonaws.com"
 db_name     = "mydb"
+db_type     = "RDS Instance" або "Aurora Cluster"
 
 ### 🧾 Ключові зміни
 
-✅ Створено модуль rds з підтримкою PostgreSQL.
-
-✅ Автоматично генерується subnet group, parameter group, security group.
-
-✅ Використані змінні з дефолтними значеннями та типами.
-
-✅ Модуль інтегровано в основний проєкт через main.tf.
-
-✅ Перевірено виконання terraform plan та apply — без помилок.
+✅ Універсальний модуль rds, який підтримує як RDS, так і Aurora
+✅ Додано змінну use_aurora для вибору типу бази
+✅ Параметри гнучко налаштовуються через змінні
+✅ Оновлено outputs.tf для відображення endpoint будь-якого типу
+✅ Перевірено terraform plan і apply — без помилок
 
 ### 🧠 Автор
 
 Катанова Леся
-Database Module (Terraform RDS)
 Branch: lesson-db-module
 AWS Region: us-east-1
