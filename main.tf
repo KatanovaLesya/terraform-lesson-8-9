@@ -48,14 +48,17 @@ module "argo_cd" {
 
 module "rds" {
   source         = "./modules/rds"
+
+  # 🔀 Перемикач типу бази
+  use_aurora     = false        # ❌ RDS (true → Aurora Cluster)
+  engine         = "postgres"   # або "aurora-postgresql" для Aurora
   engine_version = "12.22"
   instance_class = "db.t3.micro"
   db_name        = "mydb"
   username       = "lesya_db"
   password       = "StrongPass123!"
-  vpc_id         = module.vpc.vpc_id
-  subnet_ids = module.vpc.private_subnet_ids
 
+  vpc_id      = module.vpc.vpc_id
+  subnet_ids  = module.vpc.private_subnet_ids
 }
-
 
