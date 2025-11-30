@@ -24,4 +24,3 @@ variable "cluster_certificate_authority" {
   description = "EKS cluster certificate authority (base64)"
   type        = string
 }
-

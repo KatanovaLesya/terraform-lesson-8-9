@@ -11,8 +11,11 @@ resource "helm_release" "jenkins" {
   namespace  = var.namespace
   version    = var.chart_version
 
-  # важливо: не чекаємо, поки pod стане Ready
-  timeout = 600
+  values = [
+    file("${path.module}/values.yaml")
+  ]
+
+  timeout = 1200
   wait    = false
 
   set = [
@@ -25,9 +28,14 @@ resource "helm_release" "jenkins" {
       value = var.admin_password
     },
     {
-      # вимикаємо PVC, щоб Jenkins не створював PersistentVolumeClaim
       name  = "controller.persistence.enabled"
       value = "false"
     },
+    {
+      name  = "controller.serviceType"
+      value = "ClusterIP"
+    }
   ]
+
+  depends_on = [kubernetes_namespace.jenkins]
 }

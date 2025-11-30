@@ -24,24 +24,7 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
 }
 
 ########################################
-# EKS кластер
-########################################
-resource "aws_eks_cluster" "this" {
-  name     = var.cluster_name
-  role_arn = aws_iam_role.eks_cluster_role.arn
-  version  = "1.32"
-
-  vpc_config {
-    subnet_ids = var.private_subnet_ids
-  }
-
-  depends_on = [
-    aws_iam_role_policy_attachment.eks_cluster_policy
-  ]
-}
-
-########################################
-# IAM роль для воркерів
+# IAM роль для нод (воркерів)
 ########################################
 resource "aws_iam_role" "eks_node_role" {
   name = "${var.cluster_name}-node-role"
@@ -60,9 +43,6 @@ resource "aws_iam_role" "eks_node_role" {
   })
 }
 
-########################################
-# IAM політики для воркерів
-########################################
 resource "aws_iam_role_policy_attachment" "eks_worker_node" {
   role       = aws_iam_role.eks_node_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
@@ -78,22 +58,31 @@ resource "aws_iam_role_policy_attachment" "ecr_readonly" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
-# Додаткова політика для стабільного зв'язку з EKS
-resource "aws_iam_role_policy_attachment" "eks_service" {
-  role       = aws_iam_role.eks_node_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSServicePolicy"
+########################################
+# EKS кластер
+########################################
+resource "aws_eks_cluster" "this" {
+  name     = var.cluster_name
+  role_arn = aws_iam_role.eks_cluster_role.arn
+  version  = "1.32"
+
+  vpc_config {
+    subnet_ids = var.private_subnet_ids
+  }
+
+  depends_on = [
+    aws_iam_role_policy_attachment.eks_cluster_policy
+  ]
 }
 
 ########################################
-# Node Group
+# Node Group (без depends_on!)
 ########################################
 resource "aws_eks_node_group" "lesson10" {
   cluster_name    = aws_eks_cluster.this.name
   node_group_name = "${var.cluster_name}-node-group"
   node_role_arn   = aws_iam_role.eks_node_role.arn
-
-  # 🔧 Якщо NAT Gateway ще не налаштований — можна тимчасово використовувати публічні сабнети
-  subnet_ids = var.private_subnet_ids
+  subnet_ids      = var.private_subnet_ids
 
   scaling_config {
     desired_size = 2
@@ -103,15 +92,5 @@ resource "aws_eks_node_group" "lesson10" {
 
   instance_types = ["t3.medium"]
 
-  tags = {
-    Name = "${var.cluster_name}-node-group"
-  }
-
-  depends_on = [
-    aws_eks_cluster.this,
-    aws_iam_role_policy_attachment.eks_worker_node,
-    aws_iam_role_policy_attachment.eks_cni,
-    aws_iam_role_policy_attachment.ecr_readonly,
-    aws_iam_role_policy_attachment.eks_service
-  ]
+  
 }
