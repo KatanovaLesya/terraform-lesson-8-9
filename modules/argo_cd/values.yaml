@@ -1,0 +1,12 @@
+# Базова конфігурація Argo CD через Helm
+
+server:
+  service:
+    type: ClusterIP
+
+configs:
+  secret:
+    argocdServerAdminPassword: "$2a$12$g4wP3tZsmUdTsdAQjRga8OZhW7i4X8CZIlv69jY.3dAAtW03q5hOa" # admin / Admin123!
+
+dex:
+  enabled: false

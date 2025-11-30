@@ -1,5 +1,5 @@
 variable "namespace" {
-  description = "Namespace for monitoring tools"
+  description = "Namespace for Prometheus and Grafana"
   type        = string
   default     = "monitoring"
 }
@@ -7,15 +7,16 @@ variable "namespace" {
 variable "grafana_admin" {
   description = "Grafana admin username"
   type        = string
+  default     = "admin"
 }
 
 variable "grafana_pass" {
   description = "Grafana admin password"
   type        = string
-  sensitive   = true
+  default     = "Grafana123!"
 }
 
 variable "cluster_name" {
-  description = "EKS cluster name for monitoring connection"
+  description = "EKS cluster name (for Helm provider)"
   type        = string
 }

@@ -1,8 +1,12 @@
-output "grafana_info" {
+output "grafana_credentials" {
+  description = "Grafana admin credentials"
   value = {
-    namespace = var.namespace
-    username  = var.grafana_admin
-    password  = var.grafana_pass
+    username = var.grafana_admin
+    password = var.grafana_pass
   }
-  sensitive = true
+}
+
+output "monitoring_namespace" {
+  description = "Namespace for monitoring stack"
+  value       = var.namespace
 }
