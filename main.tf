@@ -23,8 +23,9 @@ module "eks" {
   source             = "./modules/eks"
   cluster_name       = "lesson-10-eks"
   vpc_id             = module.vpc.vpc_id
-  private_subnet_ids = module.vpc.public_subnet_ids
+  private_subnet_ids = module.vpc.private_subnet_ids
 }
+
 
 module "jenkins" {
   source = "./modules/jenkins"
@@ -38,27 +39,38 @@ module "jenkins" {
 }
 
 module "argo_cd" {
-  source                      = "./modules/argo_cd"
-  cluster_name                 = module.eks.cluster_name
-  cluster_endpoint             = module.eks.cluster_endpoint
+  source                        = "./modules/argo_cd"
+  cluster_name                  = module.eks.cluster_name
+  cluster_endpoint              = module.eks.cluster_endpoint
   cluster_certificate_authority = module.eks.cluster_ca_data
 }
 
 
 
 module "rds" {
-  source         = "./modules/rds"
+  source = "./modules/rds"
 
   # 🔀 Перемикач типу бази
-  use_aurora     = false        # ❌ RDS (true → Aurora Cluster)
-  engine         = "postgres"   # або "aurora-postgresql" для Aurora
+  use_aurora     = false      # ❌ RDS (true → Aurora Cluster)
+  engine         = "postgres" # або "aurora-postgresql" для Aurora
   engine_version = "12.22"
   instance_class = "db.t3.micro"
   db_name        = "mydb"
   username       = "lesya_db"
   password       = "StrongPass123!"
 
-  vpc_id      = module.vpc.vpc_id
-  subnet_ids  = module.vpc.private_subnet_ids
+  vpc_id     = module.vpc.vpc_id
+  subnet_ids = module.vpc.private_subnet_ids
+}
+
+# Monitoring (Prometheus + Grafana)
+
+module "monitoring" {
+  source = "./modules/monitoring"
+
+  namespace     = "monitoring"
+  grafana_admin = "admin"
+  grafana_pass  = "Grafana123!"
+  cluster_name  = module.eks.cluster_name
 }
 
